@@ -1,5 +1,10 @@
 # Express.js & React Todos
 
+## Requirements
+
+* node >= v6.x.x
+* mongodb
+
 ## Start
 
 * git clone https://github.com/lfbos/todos.git
