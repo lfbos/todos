@@ -6,8 +6,11 @@ var Schema = new(db.Schema)({
   done: {type: Boolean, default: false},
 });
 
-Schema.methods.toJSON = function() {
+Schema.methods.toJSON = function() {  
   return {
+    id: this.toObject()._id,
+    title: this.toObject().title,
+    done: this.toObject().done
   };
 };
 
