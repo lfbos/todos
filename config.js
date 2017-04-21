@@ -1,45 +1,45 @@
 var express = require('express'),
-    db = require('mongoose'),
-    bodyparser = require('body-parser'),
-    path = require('path'),
-    util = require('util'),
-    fs = require('fs');
+  db = require('mongoose'),
+  bodyparser = require('body-parser'),
+  path = require('path'),
+  util = require('util'),
+  fs = require('fs');
 
-module.exports = exports = function(app) {
+module.exports = exports = function (app) {
   /*
     MongoDb configuration
   */
   var DATABASE_HOST,
-      DATABASE_NAME,
-      DATABASE_USER,
-      DATABASE_PASSWORD;
+    DATABASE_NAME,
+    DATABASE_USER,
+    DATABASE_PASSWORD;
 
   switch (app.settings.env) {
-  case 'production':
-    DATABASE_HOST = process.env.DATABASE_HOST;
-    DATABASE_NAME = process.env.DATABASE_NAME;
-    DATABASE_USER = process.env.DATABASE_USER;
-    DATABASE_PASSWORD = process.env.DATABASE_PASSWORD;
-    break;
+    case 'production':
+      DATABASE_HOST = process.env.DATABASE_HOST;
+      DATABASE_NAME = process.env.DATABASE_NAME;
+      DATABASE_USER = process.env.DATABASE_USER;
+      DATABASE_PASSWORD = process.env.DATABASE_PASSWORD;
+      break;
 
-  case 'development':
-    DATABASE_HOST = 'localhost';
-    DATABASE_NAME = 'db';
-    break;
+    case 'development':
+      DATABASE_HOST = 'localhost';
+      DATABASE_NAME = 'db';
+      break;
 
-  default:
-    break;
+    default:
+      break;
   }
 
   var DATABASE_URL = util.format(
     'mongodb://%s/%s', DATABASE_HOST, DATABASE_NAME);
 
-  var connect = function() {
+  var connect = function () {
     var options = {
       server: {
-	socketOptions: {
-	  keepAlive: 1
-	}
+        socketOptions: {
+          keepAlive: 1
+        }
       }
     };
 
@@ -53,26 +53,32 @@ module.exports = exports = function(app) {
 
   connect();
 
-  db.connection.on('error', function(err) {
+  db.connection.on('error', function (err) {
     console.log(err);
   });
 
-  db.connection.on('disconnected', function() {
+  db.connection.on('disconnected', function () {
     connect();
   });
 
-   /*
-    Loading models
-   */
+  /*
+   Loading models
+  */
+
+  // Mongo requires a external promise library
+  db.Promise = require('bluebird');
 
   var apps = path.resolve('./apps/');
-  fs.readdirSync(apps).forEach(function(app) {
+  fs.readdirSync(apps).forEach(function (app) {
     var models = path.join(apps, app, 'models.js')
 
     if (fs.existsSync(models)) {
       require(models);
     }
   });
+
+  app.use(bodyparser.urlencoded({ extended: true }));
+  app.use(bodyparser.json());
 
   /*
     Adding favicon and serving compressed static files
